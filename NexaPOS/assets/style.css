@@ -1,0 +1,48 @@
+﻿body { font-size: 14px; background:#0b1220; color:#e5e7eb; }
+a, a:hover { color: #93c5fd; }
+table th, table td { vertical-align: middle; }
+.card, .table, .navbar, .dropdown-menu, .modal-content { background-color:#111827 !important; color:#e5e7eb; border-color:#1f2937; }
+.table { color:#e5e7eb; }
+.table thead { background:#0f172a !important; color:#e5e7eb !important; }
+.table tbody tr { background:#111827 !important; }
+.table tbody tr:nth-child(odd) { background:#0d1628 !important; }
+.table tbody tr:hover { background:#162035 !important; }
+.table th { text-transform: uppercase; font-size:12px; letter-spacing:0.02em; border-color:#1f2937; }
+.table td { border-color:#1f2937 !important; }
+.table > :not(caption) > * > * { background-color: transparent !important; color:#e5e7eb !important; }
+.form-control, .form-select { background:#0b1220; color:#e5e7eb; border-color:#1f2937; }
+.form-control:focus, .form-select:focus { border-color:#2563eb; box-shadow:0 0 0 0.1rem rgba(37,99,235,.25); }
+.btn-primary { background:#2563eb; border-color:#2563eb; }
+.btn-secondary { background:#334155; border-color:#334155; }
+.btn-danger { background:#ef4444; border-color:#ef4444; }
+.btn-outline-light { border-color:#334155; color:#e5e7eb; }
+.btn-outline-light:hover { background:#2563eb; border-color:#2563eb; color:#fff; }
+.navbar-dark .navbar-nav .nav-link { color:#e5e7eb; }
+.navbar-dark .navbar-nav .nav-link.active { color:#93c5fd; }
+.dropdown-menu { background-color:#0f172a !important; }
+.dropdown-item { color:#e5e7eb; }
+.dropdown-item:hover { background:#1f2937; color:#fff; }
+.kpi-card { background:linear-gradient(135deg,#1d4ed8,#0ea5e9); color:white; border:none; }
+.kpi-card .icon { font-size:24px; }
+.chart-card { background:#0f172a; border:1px solid #1f2937; }
+.card-pos { border:1px solid #1f2937; }
+.card-pos .price-display { color:#7dd3fc; }
+.stock-label { color:#cbd5e1; font-size:12px; }
+.cart-item { color:#e5e7eb; }
+.cart-item input, .cart-item select { background:#0b1220; color:#e5e7eb; border-color:#1f2937; }
+.cart-item .small, .cart-item .fw-semibold { color:#e5e7eb !important; }
+.cart-item .text-muted { color:#d1d5db !important; }
+.checkout-summary { background:#0f172a; border:1px solid #1f2937; border-radius:8px; padding:12px; color:#e5e7eb; }
+.print-area { width: 280px; }
+.report-area { background:#0b1220; padding:12px; border-radius:8px; border:1px solid #1f2937; }
+@media print {
+    nav, .no-print { display:none; }
+    .print-area { width:100%; }
+}
+
+/* Laporan print A4 */
+@media print {
+    @page { size: A4 portrait; margin: 10mm; }
+    body { background:#fff; color:#000; }
+    .report-area { background:#fff !important; color:#000 !important; }
+}
