@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MDC POS – Demo</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .layout { display: grid; grid-template-columns: 1fr 380px; gap: 16px; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; }
+    .list { max-height: 60vh; overflow: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #eee; padding: 6px; text-align: left; }
+    .right { text-align: right; }
+    .totals p { display: flex; justify-content: space-between; margin: 6px 0; }
+    input[type="number"] { width: 72px; }
+  </style>
+  <script>
+    async function api(url, opts={}) { const r = await fetch(url, opts); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }
+    function fmt(n){ return new Intl.NumberFormat('id-ID').format(n); }
+    let products = []; let cart = [];
+    async function loadProducts(){
+      const res = await api('api_products.php');
+      if(res.status !== 'success'){ alert('Gagal memuat produk: ' + (res.message||'')); return; }
+      products = res.data || []; renderProducts();
+    }
+    function renderProducts(){
+      const tbody = document.querySelector('#prod tbody'); tbody.innerHTML='';
+      products.forEach(p=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML = `<td>${p.KODEBRG}</td><td>${p.NAMABRG}</td><td class="right">${fmt(p.HGJUAL)}</td><td><button data-id="${p.ID}">Tambah</button></td>`;
+        tr.querySelector('button').onclick=()=>addToCart(p);
+        tbody.appendChild(tr);
+      });
+    }
+    function addToCart(p){
+      const existing = cart.find(it=>it.ID===p.ID);
+      if(existing){ existing.QTY += 1; }
+      else { cart.push({ ID:p.ID, QTY:1, HGJUAL: Number(p.HGJUAL)||0, HGBELI:0, BRUTO:0, DISC1:0, DISC2:0, HITDISC1:0, HITDISC2:0, NETTO:0, NAMABRG:p.NAMABRG }); }
+      renderCart();
+    }
+    function updateQty(idx, val){ cart[idx].QTY = Math.max(1, Number(val)||1); renderCart(); }
+    function removeItem(idx){ cart.splice(idx,1); renderCart(); }
+    function calcTotals(){
+      let bruto=0, netto=0; cart.forEach(it=>{ const ln = it.QTY*it.HGJUAL; bruto+=ln; netto+=ln; it.BRUTO=ln; it.NETTO=ln; });
+      return { bruto, netto };
+    }
+    function renderCart(){
+      const tbody = document.querySelector('#cart tbody'); tbody.innerHTML='';
+      cart.forEach((it,idx)=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML = `<td>${it.NAMABRG||it.ID}</td>
+                        <td class="right"><input type="number" min="1" value="${it.QTY}" /></td>
+                        <td class="right">${fmt(it.HGJUAL)}</td>
+                        <td class="right">${fmt(it.QTY*it.HGJUAL)}</td>
+                        <td><button>Hapus</button></td>`;
+        tr.querySelector('input').onchange=(e)=>updateQty(idx,e.target.value);
+        tr.querySelector('button').onclick=()=>removeItem(idx);
+        tbody.appendChild(tr);
+      });
+      const t = calcTotals();
+      document.getElementById('total').textContent = fmt(t.netto);
+    }
+    async function checkout(){
+      if(cart.length===0){ alert('Keranjang kosong'); return; }
+      const t=calcTotals();
+      const payload = {
+        KODECB: document.getElementById('kodecb').value || '00',
+        KODESL: document.getElementById('kodesl').value || 'SL1',
+        KODEMB: document.getElementById('kodemb').value || 'MB0001',
+        CARABAYAR: 1,
+        STATUS: 1,
+        BAYAR: t.netto,
+        CUSER: 'WEB_POS',
+        ITEMS: cart.map(it=>({
+          ID: it.ID, QTY: it.QTY, HGJUAL: it.HGJUAL, HGBELI: it.HGBELI,
+          BRUTO: it.BRUTO, DISC1: it.DISC1, DISC2: it.DISC2, HITDISC1: it.HITDISC1, HITDISC2: it.HITDISC2, NETTO: it.NETTO
+        }))
+      };
+      try{
+        const res = await api('api_pos_sale.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+        if(res.status==='success'){ alert(res.message || 'Berhasil!'); cart=[]; renderCart(); }
+        else { alert('Gagal: ' + (res.message||'')); }
+      }catch(e){ alert('Error: ' + e.message); }
+    }
+    window.onload = () => { loadProducts(); renderCart(); };
+  </script>
+  </head>
+<body>
+  <h2>MDC POS – Demo</h2>
+  <div class="layout">
+    <div class="card">
+      <h3>Produk</h3>
+      <div class="list">
+        <table id="prod">
+          <thead><tr><th>Kode</th><th>Nama</th><th>Harga</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Keranjang</h3>
+      <div class="form">
+        <label>Kode Cabang <input id="kodecb" value="00" /></label>
+        <label>Kode Sales <input id="kodesl" value="SL1" /></label>
+        <label>Kode Member <input id="kodemb" value="MB0001" /></label>
+      </div>
+      <div class="list">
+        <table id="cart">
+          <thead><tr><th>Item</th><th>Qty</th><th>Harga</th><th>Subtotal</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="totals">
+        <p><strong>Total</strong> <strong id="total">0</strong></p>
+      </div>
+      <button onclick="checkout()">Bayar</button>
+    </div>
+  </div>
+</body>
+</html>
+

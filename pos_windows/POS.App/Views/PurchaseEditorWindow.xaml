@@ -1,0 +1,64 @@
+<Window x:Class="POS.App.Views.PurchaseEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Pembelian" Height="560" Width="900">
+  <Grid Margin="12">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+    <!-- Header fields -->
+    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+      <TextBlock Text="Gudang:" VerticalAlignment="Center"/>
+      <ComboBox x:Name="CmbWarehouse" Width="240" Margin="8,0"/>
+      <TextBlock Text="Supplier Kode:" VerticalAlignment="Center"/>
+      <TextBox x:Name="TxtSupplierCode" Width="120" Margin="8,0"/>
+      <TextBlock Text="Nama:" VerticalAlignment="Center"/>
+      <TextBox x:Name="TxtSupplier" Width="200" Margin="8,0"/>
+      <CheckBox x:Name="ChkPpn" Content="PPN 11%" Margin="12,0,0,0"/>
+    </StackPanel>
+    <!-- Items table -->
+    <Border Grid.Row="1" BorderBrush="#DDD" BorderThickness="1" CornerRadius="6" Padding="8">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+          <Button Content="Tambah Item" Click="AddItem_OnClick"/>
+          <Button Content="Produk Baru" Margin="8,0,0,0" Click="NewProduct_OnClick"/>
+        </StackPanel>
+        <DataGrid x:Name="GridItems" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="False">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="#" Width="40" IsReadOnly="True" Binding="{Binding Index}"/>
+            <DataGridTextColumn Header="Nama" Width="*" IsReadOnly="True" Binding="{Binding Name}"/>
+            <DataGridTextColumn Header="Qty" Width="80" Binding="{Binding Qty, UpdateSourceTrigger=PropertyChanged}"/>
+            <DataGridTextColumn Header="Harga Beli" Width="120" Binding="{Binding Price, UpdateSourceTrigger=PropertyChanged}"/>
+            <DataGridTextColumn Header="H1" Width="100" Binding="{Binding PriceH1, UpdateSourceTrigger=PropertyChanged}"/>
+            <DataGridTextColumn Header="H2" Width="100" Binding="{Binding PriceH2, UpdateSourceTrigger=PropertyChanged}"/>
+            <DataGridTextColumn Header="Grosir" Width="100" Binding="{Binding PriceGrosir, UpdateSourceTrigger=PropertyChanged}"/>
+            <DataGridTextColumn Header="Total" Width="120" IsReadOnly="True" Binding="{Binding Total}"/>
+            <DataGridTemplateColumn Header="Aksi" Width="80">
+              <DataGridTemplateColumn.CellTemplate>
+                <DataTemplate>
+                  <Button Content="Hapus" Padding="6,2" Click="RemoveItem_OnClick"/>
+                </DataTemplate>
+              </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+          </DataGrid.Columns>
+        </DataGrid>
+      </DockPanel>
+    </Border>
+    <!-- Footer totals -->
+    <DockPanel Grid.Row="2" Margin="0,8,0,0">
+      <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+        <TextBlock Text="Pembayaran:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+        <ComboBox x:Name="CmbPayType" Width="120">
+          <ComboBoxItem Content="Tunai"/>
+          <ComboBoxItem Content="Hutang"/>
+        </ComboBox>
+        <TextBlock Text="Bayar Sekarang:" VerticalAlignment="Center" Margin="12,0,8,0"/>
+        <TextBox x:Name="TxtPayNow" Width="120" Text="0"/>
+        <Button Content="Simpan" Margin="8,0,0,0" Click="Save_OnClick"/>
+      </StackPanel>
+      <TextBlock x:Name="TxtTotals" FontWeight="Bold" VerticalAlignment="Center"/>
+    </DockPanel>
+  </Grid>
+</Window>

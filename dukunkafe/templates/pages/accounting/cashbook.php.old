@@ -1,0 +1,94 @@
+
+<?php
+
+require_auth(['admin', 'kasir', 'manager']);
+
+$title = 'Accounting - Cash Book';
+$pdo = get_pdo($config);
+$user_id = $_SESSION['user']['id'];
+
+// Find active session for the current user
+$active_session_stmt = $pdo->prepare("SELECT * FROM cash_sessions WHERE user_id = ? AND closed_at IS NULL");
+$active_session_stmt->execute([$user_id]);
+$active_session = $active_session_stmt->fetch();
+
+// Handle POST actions
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? '';
+
+    if ($action === 'start_session') {
+        $opening_cash = (float)($_POST['opening_cash'] ?? 0);
+        $employee_id = $_POST['employee_id'] ?? null;
+        $pin = $_POST['pin'] ?? '';
+        // Verify PIN against employees table
+        $ok = false;
+        if ($employee_id && $pin !== '') {
+            $stmt = $pdo->prepare('SELECT id FROM employees WHERE id = ? AND pin = ? AND active = 1');
+            $stmt->execute([$employee_id, $pin]);
+            $ok = (bool)$stmt->fetchColumn();
+        }
+        if (!$ok) {
+            redirect(base_url('accounting/cashbook&error=invalid_pin'));
+        }
+        if (!$active_session) {
+            $stmt = $pdo->prepare("INSERT INTO cash_sessions (user_id, opened_at, opening_cash) VALUES (?, NOW(), ?)");
+            $stmt->execute([$user_id, $opening_cash]);
+        }
+    } elseif ($action === 'add_expense' && $active_session) {
+        $amount = (float)($_POST['amount'] ?? 0);
+        $memo = $_POST['memo'] ?? '';
+        $account_id = $_POST['account_id'] ?? null; // e.g., Beban Operasional
+        if ($amount > 0 && $memo && $account_id) {
+            $stmt = $pdo->prepare("INSERT INTO expenses (cash_session_id, account_id, amount, memo, paid_via) VALUES (?, ?, ?, ?, 'CASH')");
+            $stmt->execute([$active_session['id'], $account_id, $amount, $memo]);
+        }
+    } elseif ($action === 'end_session' && $active_session) {
+        $closing_cash = (float)($_POST['closing_cash'] ?? 0);
+        $stmt = $pdo->prepare("UPDATE cash_sessions SET closed_at = NOW(), closing_cash = ? WHERE id = ?");
+        $stmt->execute([$closing_cash, $active_session['id']]);
+    }
+
+    redirect(base_url('accounting/cashbook'));
+}
+
+
+// Fetch data for the view if a session is active
+$transactions = [];
+$calculated_cash = 0;
+if ($active_session) {
+    $calculated_cash = $active_session['opening_cash'];
+
+    // Get cash sales
+    $sales_stmt = $pdo->prepare("SELECT created_at, total, order_no FROM orders WHERE payment_method = 'CASH' AND branch_id = ? AND closed_at BETWEEN ? AND NOW()");
+    $sales_stmt->execute([get_current_branch_id(), $active_session['opened_at']]);
+    $sales = $sales_stmt->fetchAll();
+    foreach ($sales as $sale) {
+        $transactions[] = ['ts' => $sale['created_at'], 'memo' => 'Sale: ' . $sale['order_no'], 'type' => 'IN', 'amount' => $sale['total']];
+        $calculated_cash += $sale['total'];
+    }
+
+    // Get cash expenses
+    $expenses_stmt = $pdo->prepare("SELECT e.created_at, e.memo, e.amount, a.name as account_name FROM expenses e JOIN accounts a ON e.account_id = a.id WHERE e.cash_session_id = ?");
+    $expenses_stmt->execute([$active_session['id']]);
+    $expenses = $expenses_stmt->fetchAll();
+    foreach ($expenses as $expense) {
+        $transactions[] = ['ts' => $expense['created_at'], 'memo' => 'Expense: ' . $expense['memo'] . ' (' . $expense['account_name'] . ')', 'type' => 'OUT', 'amount' => $expense['amount']];
+        $calculated_cash -= $expense['amount'];
+    }
+
+    // Sort transactions by time
+    usort($transactions, fn($a, $b) => strtotime($a['ts']) <=> strtotime($b['ts']));
+}
+
+// Fetch expense accounts for the form
+$expense_accounts = $pdo->query("SELECT id, name FROM accounts WHERE type = 'EXPENSE' AND active = 1")->fetchAll();
+$employees = $pdo->query("SELECT id, name FROM employees WHERE active = 1 ORDER BY name")->fetchAll();
+
+view('accounting/cashbook', [
+    'title' => $title,
+    'active_session' => $active_session,
+    'transactions' => $transactions,
+    'calculated_cash' => $calculated_cash,
+    'expense_accounts' => $expense_accounts,
+    'employees' => $employees,
+]);

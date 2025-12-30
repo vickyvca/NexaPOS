@@ -1,0 +1,23 @@
+<Page x:Class="POS.App.Views.ReportSalesBySalesmanView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Laporan Jual / Salesman">
+    <DockPanel Margin="16">
+        <TextBlock DockPanel.Dock="Top" Text="Laporan Penjualan per Salesman" Style="{StaticResource TitleText}" Margin="0,0,0,12"/>
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Dari:" VerticalAlignment="Center"/>
+                <DatePicker x:Name="DtFrom" Margin="8,0"/>
+                <TextBlock Text="Sampai:" VerticalAlignment="Center" Margin="16,0,8,0"/>
+                <DatePicker x:Name="DtTo" Margin="8,0"/>
+                <Button Content="Terapkan" Click="Apply_OnClick" Margin="8,0" Style="{StaticResource AccentButton}"/>
+            </StackPanel>
+        </DockPanel>
+        <DataGrid x:Name="Grid" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Salesman" Binding="{Binding Name}" Width="*"/>
+                <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat=N0}" Width="160"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</Page>

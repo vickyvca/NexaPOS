@@ -1,0 +1,4 @@
+/* Minimal custom styles; Tailwind is used mainly */
+table { border-collapse: collapse; }
+th, td { vertical-align: top; }
+

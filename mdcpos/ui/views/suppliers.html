@@ -1,0 +1,36 @@
+<div class="card">
+  <h3>Suppliers</h3>
+  <div class="toolbar">
+    <input id="q" placeholder="Cari nama/kode…" oninput="supSearch()" />
+  </div>
+  <div class="list">
+    <table id="tbl">
+      <thead><tr><th>KODE</th><th>NAMA</th><th>KOTA</th><th>TELP</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+<script>
+  let all=[], data=[];
+  function fmt(v){ return v==null?'':v; }
+  async function api(url){ const r=await fetch(url); if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }
+  async function load(){
+    const res = await api('../api_suppliers.php');
+    all = res.data||[]; data=all; render();
+  }
+  function supSearch(){
+    const q=(document.getElementById('q').value||'').toLowerCase();
+    data = all.filter(r=> (r.NAMASP||'').toLowerCase().includes(q) || (r.KODESP||'').toLowerCase().includes(q));
+    render();
+  }
+  function render(){
+    const tb=document.querySelector('#tbl tbody'); tb.innerHTML='';
+    data.forEach(r=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML = `<td>${fmt(r.KODESP)}</td><td>${fmt(r.NAMASP)}</td><td>${fmt(r.KOTA)}</td><td>${fmt(r.TELP)}</td>`;
+      tb.appendChild(tr);
+    });
+  }
+  load();
+</script>
+

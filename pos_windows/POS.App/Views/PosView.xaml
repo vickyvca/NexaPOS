@@ -1,0 +1,128 @@
+<Page x:Class="POS.App.Views.PosView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="POS">
+    <DockPanel Margin="16">
+        <!-- Title -->
+        <TextBlock DockPanel.Dock="Top" Text="Point of Sale" Style="{StaticResource TitleText}" Margin="0,0,0,12"/>
+
+        <!-- Main Content -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="420"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left: Catalog -->
+            <DockPanel Grid.Column="0" Margin="0,0,16,0">
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
+                    <TextBlock Text="Gudang:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <ComboBox x:Name="CmbWarehouse" Width="220" SelectionChanged="Warehouse_Changed"/>
+                    <TextBlock Text="Harga:" VerticalAlignment="Center" Margin="16,0,8,0"/>
+                    <ComboBox x:Name="CmbLevel" Width="140" SelectionChanged="Level_Changed">
+                        <ComboBoxItem Content="H1"/>
+                        <ComboBoxItem Content="H2"/>
+                        <ComboBoxItem Content="Grosir"/>
+                    </ComboBox>
+                    <CheckBox x:Name="ChkPpn" Content="PPN 11%" Margin="16,0,0,0"/>
+                </StackPanel>
+                <Border Style="{StaticResource CardBorder}" DockPanel.Dock="Top" Margin="0,0,0,12">
+                    <DockPanel>
+                        <TextBox x:Name="TxtScan" Height="36" DockPanel.Dock="Left" Width="420" KeyDown="TxtScan_OnKeyDown"/>
+                        <Button Content="Cari" Margin="8,0,0,0" Click="Search_OnClick"/>
+                    </DockPanel>
+                </Border>
+                <DataGrid x:Name="CatalogGrid" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" SelectionMode="Single">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Nama" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="Harga" Binding="{Binding PriceText}" Width="120"/>
+                        <DataGridTextColumn Header="Stok" Binding="{Binding StockText}" Width="80"/>
+                        <DataGridTemplateColumn Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="+ Add" Click="AddToCart_Click"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <DockPanel Margin="0,8,0,0">
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                        <TextBlock Text="Rows/page:" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="CmbPageSize" Width="80" Margin="8,0,0,0" SelectionChanged="PageSize_Changed">
+                            <ComboBoxItem Content="15"/>
+                            <ComboBoxItem Content="30"/>
+                            <ComboBoxItem Content="50"/>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                        <Button Content="Prev" Click="PagePrev_Click"/>
+                        <TextBlock x:Name="TxtPageInfo" Margin="8,0" VerticalAlignment="Center"/>
+                        <Button Content="Next" Click="PageNext_Click"/>
+                    </StackPanel>
+                </DockPanel>
+            </DockPanel>
+
+            <!-- Right: Order Summary -->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Top: Customer, Salesman, Pay method -->
+                <Border Style="{StaticResource CardBorder}" Grid.Row="0" Margin="0,0,0,12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                            <TextBlock Text="Customer / Member"/>
+                            <ComboBox x:Name="CmbCustomerInline"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="8,0,8,0">
+                            <TextBlock Text="Salesman"/>
+                            <TextBox x:Name="TxtSalesmanInline"/>
+                        </StackPanel>
+                        
+                    </Grid>
+                </Border>
+
+                <!-- Header for order list -->
+                <Border Style="{StaticResource CardBorder}" Grid.Row="1">
+                    <StackPanel>
+                        <TextBlock Text="Ringkasan Pesanan" Style="{StaticResource TitleText}"/>
+                        <TextBlock x:Name="TxtOrderNo" Foreground="{StaticResource MutedTextBrush}"/>
+                    </StackPanel>
+                </Border>
+
+                <DataGrid Grid.Row="2" x:Name="ListSummary" AutoGenerateColumns="False" CanUserAddRows="False" Margin="0,12,0,0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Item" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="Qty" Binding="{Binding Qty}" Width="50"/>
+                        <DataGridTextColumn Header="Harga" Binding="{Binding Price}" Width="80"/>
+                        <DataGridTextColumn Header="Total" Binding="{Binding Total}" Width="80"/>
+                        <DataGridTemplateColumn Width="50">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="X" Click="Cart_Remove_Click" Style="{StaticResource DangerButton}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <Border Style="{StaticResource CardBorder}" Grid.Row="3" Margin="0,12,0,0"><StackPanel>
+                        <TextBlock x:Name="TxtTotalBig" FontWeight="Bold" FontSize="30" Foreground="{StaticResource PrimaryBrush}"/><TextBlock x:Name="TxtSubAndTax" FontSize="14" Foreground="{StaticResource MutedTextBrush}"/><StackPanel Orientation="Horizontal" Margin="0,8,0,0"><Button Content="Cash" Width="90" Height="32" Click="PayMethod_Cash"/><Button Content="Card" Width="90" Height="32" Margin="8,0,0,0" Click="PayMethod_Card"/><Button Content="Wallet" Width="90" Height="32" Margin="8,0,0,0" Click="PayMethod_Wallet"/></StackPanel><Grid Margin="0,12,0,0">
+                            <Button Content="Batal" Click="Cancel_OnClick" HorizontalAlignment="Left" Style="{StaticResource DangerButton}"/>
+                            <Button Content="Bayar" Style="{StaticResource AccentButton}" HorizontalAlignment="Right" Click="Pay_OnClick"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Page>

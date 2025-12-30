@@ -1,0 +1,30 @@
+<Page x:Class="POS.App.Views.PayablesView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Hutang Supplier">
+  <Grid Margin="16">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+    <StackPanel Orientation="Horizontal">
+      <Button Content="Refresh" Click="Refresh_OnClick"/>
+    </StackPanel>
+    <ListView x:Name="List" Grid.Row="1">
+      <ListView.View>
+        <GridView>
+          <GridViewColumn Header="No Pembelian" DisplayMemberBinding="{Binding PurchaseNumber}" Width="160"/>
+          <GridViewColumn Header="Supplier" DisplayMemberBinding="{Binding SupplierName}" Width="220"/>
+          <GridViewColumn Header="Total" DisplayMemberBinding="{Binding Total}" Width="100"/>
+          <GridViewColumn Header="Terbayar" DisplayMemberBinding="{Binding Paid}" Width="100"/>
+          <GridViewColumn Header="Sisa" DisplayMemberBinding="{Binding Balance}" Width="100"/>
+        </GridView>
+      </ListView.View>
+      <ListView.ItemContainerStyle>
+        <Style TargetType="ListViewItem">
+          <EventSetter Event="MouseDoubleClick" Handler="Pay_OnDoubleClick"/>
+        </Style>
+      </ListView.ItemContainerStyle>
+    </ListView>
+  </Grid>
+</Page>

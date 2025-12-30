@@ -1,0 +1,31 @@
+<Page x:Class="POS.App.Views.InventoryView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Inventory">
+    <DockPanel Margin="16">
+        <TextBlock DockPanel.Dock="Top" Text="Inventaris Stok" Style="{StaticResource TitleText}" Margin="0,0,0,12"/>
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Gudang:" VerticalAlignment="Center"/>
+                <ComboBox x:Name="CmbWarehouse" Width="220" Margin="8,0" SelectionChanged="OnWarehouseChanged"/>
+                <TextBox x:Name="TxtSearch" Width="240" Margin="8,0" KeyDown="TxtSearch_OnKeyDown"/>
+                <Button Content="Cari" Click="Search_OnClick"/>
+            </StackPanel>
+        </DockPanel>
+        <DataGrid x:Name="Grid" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Nama" Binding="{Binding Name}" Width="*"/>
+                <DataGridTextColumn Header="Barcode" Binding="{Binding Barcode}" Width="150"/>
+                <DataGridTextColumn Header="SKU" Binding="{Binding Sku}" Width="120"/>
+                <DataGridTextColumn Header="Qty" Binding="{Binding Qty}" Width="60"/>
+                <DataGridTemplateColumn Header="Aksi" Width="120">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Sesuaikan Stok" Click="Adjust_OnClick" Style="{StaticResource LinkButton}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</Page>

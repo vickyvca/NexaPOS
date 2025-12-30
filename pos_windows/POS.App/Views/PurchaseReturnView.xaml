@@ -1,0 +1,53 @@
+<Page x:Class="POS.App.Views.PurchaseReturnView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Retur Pembelian">
+    <DockPanel Margin="16">
+        <TextBlock DockPanel.Dock="Top" Text="Retur Pembelian" Style="{StaticResource TitleText}" Margin="0,0,0,12"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Original Purchase -->
+            <DockPanel Grid.Column="0" Margin="0,0,8,0">
+                <TextBlock DockPanel.Dock="Top" Text="Nota Asli" Style="{StaticResource SubtitleText}" Margin="0,0,0,8"/>
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <Button Content="Cari Nota" DockPanel.Dock="Right" Click="Find_OnClick"/>
+                    <TextBox x:Name="TxtNumber"/>
+                </DockPanel>
+                <DataGrid x:Name="OriginalGrid" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Produk" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="Qty" Binding="{Binding Qty}" Width="80"/>
+                        <DataGridTextColumn Header="Harga" Binding="{Binding Price, StringFormat=N0}" Width="120"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+
+            <!-- Return Items -->
+            <DockPanel Grid.Column="1" Margin="8,0,0,0">
+                <TextBlock DockPanel.Dock="Top" Text="Item Retur" Style="{StaticResource SubtitleText}" Margin="0,0,0,8"/>
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                    <Button Content="Tambah Item" DockPanel.Dock="Right" Click="AddItem_OnClick"/>
+                </DockPanel>
+                <DataGrid x:Name="ReturnGrid" AutoGenerateColumns="False" CanUserAddRows="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Produk" Binding="{Binding Name}" Width="*" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="Qty" Binding="{Binding Qty}" Width="80"/>
+                        <DataGridTextColumn Header="Harga" Binding="{Binding Price, StringFormat=N0}" Width="120"/>
+                        <DataGridTemplateColumn Header="Aksi" Width="100">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="Hapus" Click="Remove_OnClick" Style="{StaticResource LinkButton.Danger}"/>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </Grid>
+        <Button Content="Simpan Retur" DockPanel.Dock="Bottom" HorizontalAlignment="Right" Margin="0,16,0,0" Click="Save_OnClick" Style="{StaticResource AccentButton}"/>
+    </DockPanel>
+</Page>

@@ -1,0 +1,20 @@
+<Window x:Class="POS.App.Views.SalePaymentWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Pembayaran" Height="300" Width="420">
+  <StackPanel Margin="12">
+    <TextBlock Text="Customer / Member"/>
+    <ComboBox x:Name="CmbCustomer"/>
+    <TextBlock Text="Salesman"/>
+    <TextBox x:Name="TxtSalesman"/>
+    <TextBlock Text="Metode"/>
+    <ComboBox x:Name="CmbMethod">
+      <ComboBoxItem Content="Tunai"/>
+      <ComboBoxItem Content="Non-Tunai"/>
+    </ComboBox>
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+      <Button Content="Bayar" Click="Pay_OnClick"/>
+      <Button Content="Batal" Click="Cancel_OnClick"/>
+    </StackPanel>
+  </StackPanel>
+</Window>

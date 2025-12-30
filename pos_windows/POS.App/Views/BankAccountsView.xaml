@@ -1,0 +1,28 @@
+<Page x:Class="POS.App.Views.BankAccountsView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Data Rekening">
+    <DockPanel Margin="16">
+        <TextBlock DockPanel.Dock="Top" Text="Manajemen Rekening Bank" Style="{StaticResource TitleText}" Margin="0,0,0,12"/>
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <Button Content="Tambah Rekening" DockPanel.Dock="Right" Click="Add_OnClick" Style="{StaticResource AccentButton}"/>
+        </DockPanel>
+        <DataGrid x:Name="Grid" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Bank" Binding="{Binding Bank}" Width="200"/>
+                <DataGridTextColumn Header="No. Rekening" Binding="{Binding Number}" Width="200"/>
+                <DataGridTextColumn Header="Atas Nama" Binding="{Binding Holder}" Width="*"/>
+                <DataGridTemplateColumn Header="Aksi" Width="120">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Edit" Click="Edit_OnClick" Style="{StaticResource LinkButton}"/>
+                                <Button Content="Hapus" Click="Delete_OnClick" Style="{StaticResource LinkButton.Danger}" Margin="8,0,0,0"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</Page>

@@ -1,0 +1,10 @@
+include: package:lints/recommended.yaml
+
+analyzer:
+  language:
+    strict-inference: true
+    strict-raw-types: true
+  exclude:
+    - build/**
+    - '**/*.g.dart'
+    - '**/*.freezed.dart'

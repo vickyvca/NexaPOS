@@ -1,0 +1,101 @@
+<div class="grid cols-2">
+  <div class="card">
+    <h3>Produk</h3>
+    <div class="toolbar">
+      <input id="q" placeholder="Cari nama/kode…" oninput="posSearch()" />
+    </div>
+    <div class="list">
+      <table id="prod">
+        <thead><tr><th>Kode</th><th>Nama</th><th class="right">Harga</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Keranjang</h3>
+    <div class="toolbar">
+      <input id="kodecb" value="00" placeholder="KODECB" />
+      <input id="kodesl" value="SL1" placeholder="KODESL" />
+      <input id="kodemb" value="MB0001" placeholder="KODEMB" />
+    </div>
+    <div class="list">
+      <table id="cart">
+        <thead><tr><th>Item</th><th class="right">Qty</th><th class="right">Harga</th><th class="right">Subtotal</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="totals">
+      <div>Total</div>
+      <div id="total">0</div>
+    </div>
+    <button class="btn" onclick="checkout()">Bayar</button>
+  </div>
+</div>
+
+<script>
+  // POS View Script
+  let products = []; let productsAll = []; let cart = [];
+  function fmt(n){ return new Intl.NumberFormat('id-ID').format(Number(n||0)); }
+  async function api(url, opts={}){ const r=await fetch(url, opts); if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }
+  async function loadProducts(){
+    const res = await api('../api_products.php');
+    if(res.status!=='success'){ alert('Gagal memuat produk: '+(res.message||'')); return; }
+    productsAll = res.data||[]; products = productsAll; renderProducts();
+  }
+  function posSearch(){
+    const q = (document.getElementById('q').value||'').toLowerCase();
+    products = productsAll.filter(p=> (p.NAMABRG||'').toLowerCase().includes(q) || (p.KODEBRG||'').toLowerCase().includes(q));
+    renderProducts();
+  }
+  function renderProducts(){
+    const tbody = document.querySelector('#prod tbody'); tbody.innerHTML='';
+    products.forEach(p=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${p.KODEBRG}</td><td>${p.NAMABRG}</td><td class='right'>${fmt(p.HGJUAL)}</td><td><button class='btn-outline' data-id='${p.ID}'>Tambah</button></td>`;
+      tr.querySelector('button').onclick=()=>addToCart(p);
+      tbody.appendChild(tr);
+    });
+  }
+  function addToCart(p){
+    const ex = cart.find(it=>it.ID===p.ID);
+    if(ex){ ex.QTY += 1; } else { cart.push({ ID:p.ID, QTY:1, HGJUAL:Number(p.HGJUAL)||0, HGBELI:0, BRUTO:0, DISC1:0, DISC2:0, HITDISC1:0, HITDISC2:0, NETTO:0, NAMABRG:p.NAMABRG }); }
+    renderCart();
+  }
+  function updateQty(idx, val){ cart[idx].QTY = Math.max(1, Number(val)||1); renderCart(); }
+  function removeItem(idx){ cart.splice(idx,1); renderCart(); }
+  function calcTotals(){ let bruto=0, netto=0; cart.forEach(it=>{ const ln = it.QTY*it.HGJUAL; bruto+=ln; netto+=ln; it.BRUTO=ln; it.NETTO=ln; }); return { bruto, netto }; }
+  function renderCart(){
+    const tbody = document.querySelector('#cart tbody'); tbody.innerHTML='';
+    cart.forEach((it,idx)=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${it.NAMABRG||it.ID}</td>
+        <td class='right'><input type='number' min='1' value='${it.QTY}' style='width:72px' /></td>
+        <td class='right'>${fmt(it.HGJUAL)}</td>
+        <td class='right'>${fmt(it.QTY*it.HGJUAL)}</td>
+        <td><button class='btn-danger'>Hapus</button></td>`;
+      tr.querySelector('input').onchange=(e)=>updateQty(idx,e.target.value);
+      tr.querySelector('button').onclick=()=>removeItem(idx);
+      tbody.appendChild(tr);
+    });
+    document.getElementById('total').textContent = fmt(calcTotals().netto);
+  }
+  async function checkout(){
+    if(cart.length===0){ alert('Keranjang kosong'); return; }
+    const t = calcTotals();
+    const payload = {
+      KODECB: document.getElementById('kodecb').value || '00',
+      KODESL: document.getElementById('kodesl').value || 'SL1',
+      KODEMB: document.getElementById('kodemb').value || 'MB0001',
+      CARABAYAR: 1, STATUS: 1, BAYAR: t.netto, CUSER: 'WEB_POS',
+      ITEMS: cart.map(it=>({ ID:it.ID, QTY:it.QTY, HGJUAL:it.HGJUAL, HGBELI:it.HGBELI, BRUTO:it.BRUTO, DISC1:it.DISC1, DISC2:it.DISC2, HITDISC1:it.HITDISC1, HITDISC2:it.HITDISC2, NETTO:it.NETTO }))
+    };
+    try{
+      const res = await api('../api_pos_sale.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+      if(res.status==='success'){ alert(res.message||'Berhasil'); cart=[]; renderCart(); }
+      else{ alert('Gagal: '+(res.message||'')); }
+    }catch(e){ alert('Error: '+e.message); }
+  }
+  // init
+  loadProducts(); renderCart();
+</script>
+

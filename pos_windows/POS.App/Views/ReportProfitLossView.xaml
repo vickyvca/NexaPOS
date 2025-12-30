@@ -1,0 +1,42 @@
+<Page x:Class="POS.App.Views.ReportProfitLossView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Laporan Laba Rugi">
+    <DockPanel Margin="16">
+        <TextBlock DockPanel.Dock="Top" Text="Laporan Laba Rugi" Style="{StaticResource TitleText}" Margin="0,0,0,12"/>
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Dari:" VerticalAlignment="Center"/>
+                <DatePicker x:Name="DtFrom" Margin="8,0"/>
+                <TextBlock Text="Sampai:" VerticalAlignment="Center" Margin="16,0,8,0"/>
+                <DatePicker x:Name="DtTo" Margin="8,0"/>
+                <Button Content="Terapkan" Click="Apply_OnClick" Margin="8,0" Style="{StaticResource AccentButton}"/>
+            </StackPanel>
+        </DockPanel>
+        <Border Style="{StaticResource CardBorder}" Padding="16">
+            <StackPanel>
+                <TextBlock Text="Ringkasan Laba Rugi" Style="{StaticResource SubtitleText}" Margin="0,0,0,8"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Total Penjualan:" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" x:Name="TxtSales" TextAlignment="Right"/>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Total Pengeluaran:" FontWeight="SemiBold"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" x:Name="TxtExpenses" TextAlignment="Right"/>
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Laba Rugi:" FontWeight="Bold"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" x:Name="TxtProfitLoss" FontWeight="Bold" TextAlignment="Right"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+    </DockPanel>
+</Page>

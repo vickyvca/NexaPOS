@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+       /* Your CSS styling here */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+        }
+
+        th {
+            text-align: left;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+        }
+
+        .btn-sync {
+            background-color: #008CBA;
+        }
+    </style>
+</head>
+<body>
+    <?php
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+
+    function getDBConnection($serverName, $dbName, $username, $password) {
+        $connectionOptions = array(
+            "Database" => $dbName,
+            "Uid" => $username,
+            "PWD" => $password
+        );
+        $conn = sqlsrv_connect($serverName, $connectionOptions);
+        if ($conn === false) {
+            die(print_r(sqlsrv_errors(), true));
+        }
+        return $conn;
+    }
+
+    function compareData() {
+        // Add your MODE_A and MODE_B connection details here
+        $serverNameA = "192.168.4.99";
+        $dbNameA = "MODECENTRE";
+        $usernameA = "sa";
+        $passwordA = "mode1234ABC";
+        $connA = getDBConnection($serverNameA, $dbNameA, $usernameA, $passwordA);
+
+        $serverNameB = "192.168.4.8";
+        $dbNameB = "MODECENTRE";
+        $usernameB = "sa";
+        $passwordB = "mode1234ABC";
+        $connB = getDBConnection($serverNameB, $dbNameB, $usernameB, $passwordB);
+
+        // Fetch data from MODE B for default values
+        $tsqlDefaultB = "SELECT T_BARANG.KODEBRG, T_STOK.ST01 AS DIPAYUDA_B FROM dbo.T_STOK JOIN dbo.T_BARANG ON T_STOK.ID = T_BARANG.ID";
+        $getResultsDefaultB = sqlsrv_query($connB, $tsqlDefaultB);
+
+        if ($getResultsDefaultB === false) {
+            die(print_r(sqlsrv_errors(), true));
+        }
+
+        // Fetch data from MODE A and compare with MODE B
+        $tsqlStokA = "SELECT T_BARANG.KODEBRG, T_STOK.ST01 AS DIPAYUDA_A FROM dbo.T_STOK JOIN dbo.T_BARANG ON T_STOK.ID = T_BARANG.ID";
+        $getResultsStokA = sqlsrv_query($connA, $tsqlStokA);
+
+        if ($getResultsStokA === false) {
+            die(print_r(sqlsrv_errors(), true));
+        }
+
+        $data = array();
+        while ($rowStokA = sqlsrv_fetch_array($getResultsStokA, SQLSRV_FETCH_ASSOC)) {
+            $kodebrg = $rowStokA['KODEBRG'];
+            $dipayudaA = $rowStokA['DIPAYUDA_A'];
+
+            $rowStokB = sqlsrv_fetch_array($getResultsDefaultB, SQLSRV_FETCH_ASSOC);
+            if ($rowStokB === false) {
+                break; // No more data in MODE B, exit the loop
+            }
+            $dipayudaB = $rowStokB['DIPAYUDA_B'];
+
+            // Show only data where MODE B value is less than MODE A
+            if ($dipayudaB < $dipayudaA) {
+                $data[] = array('KODEBRG' => $kodebrg, 'DIPAYUDA_A' => $dipayudaA, 'DIPAYUDA_B' => $dipayudaB);
+            }
+        }
+
+        sqlsrv_close($connA);
+        sqlsrv_close($connB);
+
+        return $data;
+    }
+
+    function updateData($serverName, $dbName, $kodebrg, $st01, $username, $password) {
+        $conn = getDBConnection($serverName, $dbName, $username, $password);
+
+        // Get ID and DIPAYUDA_B from MODE B
+        $tsqlModeB = "SELECT T_STOK.ID, T_STOK.ST01 AS DIPAYUDA_B FROM dbo.T_STOK JOIN dbo.T_BARANG ON T_STOK.ID = T_BARANG.ID WHERE T_BARANG.KODEBRG = ?";
+        $paramsModeB = array($kodebrg);
+        $getResultsModeB = sqlsrv_query($conn, $tsqlModeB, $paramsModeB);
+
+        if ($getResultsModeB === false) {
+            die(print_r(sqlsrv_errors(), true));
+        }
+
+        $rowModeB = sqlsrv_fetch_array($getResultsModeB, SQLSRV_FETCH_ASSOC);
+        if ($rowModeB === false) {
+            // Data not found in MODE B, handle as needed
+            return;
+        }
+
+        $id = $rowModeB['ID'];
+        $dipayudaB = $rowModeB['DIPAYUDA_B'];
+
+        // Get DIPAYUDA_A from MODE A
+        $tsqlModeA = "SELECT T_STOK.ST01 AS DIPAYUDA_A FROM dbo.T_STOK JOIN dbo.T_BARANG ON T_STOK.ID = T_BARANG.ID WHERE T_BARANG.KODEBRG = ?";
+        $paramsModeA = array($kodebrg);
+        $getResultsModeA = sqlsrv_query($conn, $tsqlModeA, $paramsModeA);
+
+        if ($getResultsModeA === false) {
+            die(print_r(sqlsrv_errors(), true));
+        }
+
+        $rowModeA = sqlsrv_fetch_array($getResultsModeA, SQLSRV_FETCH_ASSOC);
+        if ($rowModeA === false) {
+            // Data not found in MODE A, handle as needed
+            return;
+        }
+
+        $dipayudaA = $rowModeA['DIPAYUDA_A'];
+
+        // Update data in MODE A
+        $tsqlUpdate = "UPDATE dbo.T_STOK SET ST01 = ? WHERE ID = ?";
+        $paramsUpdate = array($st01, $id);
+        $getResultsUpdate = sqlsrv_query($conn, $tsqlUpdate, $paramsUpdate);
+
+        if ($getResultsUpdate === false) {
+            die(print_r(sqlsrv_errors(), true));
+        }
+
+        // Insert data into HIS_STOK
+        $tgl = date("Y-m-d H:i:s");
+        $kodecb = "01";
+        $nonota = null;
+        $jenis = 3;
+        $ket = "STOKOPNAME";
+        $cuser = "OPR";
+        $stlama = $dipayudaA; // Set STLAMA to DIPAYUDA_A from MODE A
+        $stbaru = $st01; // Set STBARU to the updated ST01 value
+
+        $tsqlInsertHIS = "INSERT INTO dbo.HIS_STOK (TGL, ID, KODECB, NONOTA, JENIS, KET, CUSER, STLAMA, STBARU) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $paramsInsertHIS = array($tgl, $id, $kodecb, $nonota, $jenis, $ket, $cuser, $stlama, $stbaru);
+        $getResultsInsertHIS = sqlsrv_query($conn, $tsqlInsertHIS, $paramsInsertHIS);
+
+        if ($getResultsInsertHIS === false) {
+            die(print_r(sqlsrv_errors(), true));
+        }
+
+        sqlsrv_close($conn);
+    }
+
+    if (isset($_POST['compare']) || isset($_POST['update_all'])) {
+        $data = compareData();
+    }
+
+    if (isset($_POST['update'])) {
+        $kodebrg = $_POST['kodebrg'];
+        $st01 = $_POST['st01'];
+
+        // Get the original DIPAYUDA_A value for the report
+        $originalDipayudaA = $_POST['originalDipayudaA'];
+
+        // Update data in MODE A
+        updateData("192.168.4.99", "MODECENTRE", $kodebrg, $st01, "sa", "mode1234ABC");
+
+        // Re-compare the data to refresh the table after updating
+        $data = compareData();
+
+        // Calculate the before and after values for the report
+        $beforeValue = $originalDipayudaA;
+        $afterValue = $st01;
+
+        $updateReport = "KODE BARANG: $kodebrg | BEFORE: $beforeValue | AFTER: $afterValue";
+    }
+
+    if (isset($_POST['update_all'])) {
+        $data = compareData(); // Fetch data to update
+
+        foreach ($data as $row) {
+            // Get the original DIPAYUDA_A value for the report
+            $originalDipayudaA = $row['DIPAYUDA_A'];
+
+            // Update data in MODE A
+            updateData("192.168.4.99", "MODECENTRE", $row['KODEBRG'], $row['DIPAYUDA_B'], "sa", "mode1234ABC");
+
+            // Calculate the before and after values for the report
+            $beforeValue = $originalDipayudaA;
+            $afterValue = $row['DIPAYUDA_B'];
+
+            $updateReport .= "KODE BARANG: {$row['KODEBRG']} | BEFORE: $beforeValue | AFTER: $afterValue<br>";
+        }
+
+        // Re-compare the data to refresh the table after updating
+        $data = compareData();
+    }
+    ?>
+
+    <h2>Data Comparison Between MODE A and MODE B (DIPAYUDA)</h2>
+
+    <form method="post" action="compare.php">
+        <input type="hidden" name="compare" value="1">
+        <input class="btn" type="submit" value="Compare and Show DIPAYUDA Differences">
+    </form>
+
+    <?php if (!empty($data)) { ?>
+        <table>
+            <tr>
+                <th>KODE BARANG</th>
+                <th>DIPAYUDA A</th>
+                <th>DIPAYUDA B</th>
+                <th>Update DIPAYUDA A</th>
+            </tr>
+            <?php foreach ($data as $row) { ?>
+                <tr>
+                    <td><?php echo $row['KODEBRG']; ?></td>
+                    <td><?php echo $row['DIPAYUDA_A']; ?></td>
+                    <td><?php echo $row['DIPAYUDA_B']; ?></td>
+                    <td>
+                        <form method="post" action="compare.php">
+                            <input type="hidden" name="update" value="1">
+                            <input type="hidden" name="kodebrg" value="<?php echo $row['KODEBRG']; ?>">
+                            <input type="hidden" name="originalDipayudaA" value="<?php echo $row['DIPAYUDA_A']; ?>">
+                            <input type="text" name="st01" value="<?php echo $row['DIPAYUDA_B']; ?>"> <!-- Fetch default value from MODE B -->
+                            <input class="btn" type="submit" value="Update">
+                        </form>
+                    </td>
+                </tr>
+            <?php } ?>
+        </table>
+        <form method="post" action="compare.php">
+            <input type="hidden" name="update_all" value="1">
+            <input class="btn btn-sync" type="submit" value="Update All Data in MODE A">
+        </form>
+    <?php } else if (isset($_POST['compare'])) {
+        echo "<p>No differences found between MODE A and MODE B (DIPAYUDA) where MODE B value is less than MODE A.</p>";
+    } ?>
+
+    <?php
+    if (!empty($updateReport)) {
+        echo "<h2>Update Report</h2>";
+        echo "<p>$updateReport</p>";
+    }
+    ?>
+
+    <!-- Rest of the HTML and CSS styling -->
+</body>
+</html>

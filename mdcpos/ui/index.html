@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MDC POS</title>
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">MDC POS</div>
+      <nav class="nav">
+        <a href="#dashboard">🏠 Dashboard</a>
+        <a href="#pos">🧾 POS</a>
+        <a href="#products">📦 Products</a>
+        <a href="#jenis">🏷️ Jenis</a>
+        <a href="#suppliers">🏭 Suppliers</a>
+        <a href="#hutang">💳 Hutang</a>
+      </nav>
+      <div style="margin-top:auto;padding:12px" class="muted">
+        <small>SQL Server backend<br/>Dark UI mode</small>
+      </div>
+    </aside>
+    <main class="content" id="content">
+      <!-- view will be injected here -->
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+<script>
+  // optional: set initial hash
+  if(!location.hash){ location.hash = '#dashboard'; }
+</script>
+</html>
+

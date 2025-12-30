@@ -1,0 +1,100 @@
+
+<?php
+
+// If user is already logged in, redirect to dashboard
+if (is_logged_in()) {
+    redirect(base_url('dashboard'));
+}
+
+$error = null;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
+
+    if (empty($email) || empty($password)) {
+        $error = 'Email and password are required.';
+    } else {
+        $pdo = get_pdo($config);
+        $stmt = $pdo->prepare('SELECT * FROM users WHERE email = ? AND active = 1');
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+
+        if ($user && password_verify($password, $user['password_hash'])) {
+            // Password is correct, start session
+            $_SESSION['user'] = [
+                'id' => $user['id'],
+                'name' => $user['name'],
+                'email' => $user['email'],
+                'role' => $user['role'],
+            ];
+            // If kasir logs in and there's no active shift in the branch, send to Start Shift
+            if (in_array($user['role'], ['kasir'])) {
+                try {
+                    $pdo2 = get_pdo($config);
+                    $branch_id = (int)($_SESSION['user']['branch_id'] ?? ($user['branch_id'] ?? 0));
+                    $stmt = $pdo2->prepare(
+                        "SELECT cs.id
+                         FROM cash_sessions cs
+                         JOIN users u ON u.id = cs.user_id
+                         WHERE cs.closed_at IS NULL AND (u.branch_id = ? OR u.branch_id IS NULL)
+                         LIMIT 1"
+                    );
+                    $stmt->execute([$branch_id]);
+                    $has_active = (bool)$stmt->fetchColumn();
+                    if (!$has_active) {
+                        redirect(base_url('shift/start'));
+                    }
+                } catch (Throwable $e) { /* ignore and continue to dashboard */ }
+            }
+            redirect(base_url('dashboard'));
+        } else {
+            $error = 'Invalid email or password.';
+        }
+    }
+}
+
+?>
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Dukun Cafe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="h-full">
+<div class="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
+        </div>
+        <form class="mt-8 space-y-6" action="<?= base_url('login') ?>" method="POST">
+            <input type="hidden" name="remember" value="true">
+            <div class="rounded-md shadow-sm -space-y-px">
+                <div>
+                    <label for="email-address" class="sr-only">Email address</label>
+                    <input id="email-address" name="email" type="email" autocomplete="email" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Email address">
+                </div>
+                <div>
+                    <label for="password" class="sr-only">Password</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Password">
+                </div>
+            </div>
+
+            <?php if ($error): ?>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline"><?= htmlspecialchars($error) ?></span>
+                </div>
+            <?php endif; ?>
+
+            <div>
+                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Sign in
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

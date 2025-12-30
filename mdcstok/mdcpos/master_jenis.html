@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <link rel="stylesheet" href="../assets/css/ui.css">
+    <script defer src="../assets/js/ui.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Data Jenis | ModeCentre Web App</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input { width: 100%; padding: 8px; box-sizing: border-box; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Master Data Jenis Barang</h2>
+    <p>Menggantikan fungsi CRUD (Create, Read, Update, Delete) Master Data Sederhana.</p>
+    
+    <h3>Tambah Jenis Baru (POST Test)</h3>
+    <div id="message" style="color: green; margin-bottom: 10px;"></div>
+    
+    <div class="form-group">
+        <label for="kodeJenis">Kode Jenis (KODEJN)</label>
+        <input type="text" id="kodeJenis" placeholder="Contoh: 06" maxlength="2">
+    </div>
+    <div class="form-group">
+        <label for="keterangan">Keterangan</label>
+        <input type="text" id="keterangan" placeholder="Contoh: Aksesori Musiman">
+    </div>
+    <button onclick="handleCreate()">Simpan Jenis Baru</button>
+
+    <hr>
+    
+    <h3>Daftar Jenis (GET Test)</h3>
+    <table id="jenisTable">
+        <thead>
+            <tr>
+                <th>KODEJN</th>
+                <th>KETERANGAN</th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+</div>
+
+<script>
+    // API endpoint (production)
+    const API_URL = 'https://modecentre.cloud/mdcpos/api_ref_jenis.php';
+
+    // ==========================================================
+    // FUNGSI 1: READ (Membaca Semua Data saat Halaman Dimuat)
+    // ==========================================================
+    async function fetchJenisData() {
+        try {
+            const response = await fetch(API_URL); // simple GET to avoid preflight
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            const result = await response.json();
+
+            const tbody = document.querySelector('#jenisTable tbody');
+            tbody.innerHTML = ''; // Bersihkan tabel
+            
+            if (result.status === 'success' && result.data.length > 0) {
+                result.data.forEach(item => {
+                    const row = tbody.insertRow();
+                    row.insertCell().textContent = item.KODEJN;
+                    row.insertCell().textContent = item.KETERANGAN;
+                    // TODO: Tambahkan kolom Action (Edit/Delete) di sini
+                });
+            } else if (result.status === 'info') {
+                 // Tidak ada data
+                 document.getElementById('message').textContent = 'Tidak ada data Jenis saat ini.';
+            } else {
+                // Error saat fetching
+                document.getElementById('message').textContent = `ERROR: ${result.message}`;
+            }
+
+        } catch (error) {
+            document.getElementById('message').textContent = `Koneksi Gagal: ${error.message}`;
+        }
+    }
+
+    // ==========================================================
+    // FUNGSI 2: CREATE (Menyimpan Data Baru melalui POST)
+    // ==========================================================
+    async function handleCreate() {
+        const kode = document.getElementById('kodeJenis').value.trim();
+        const keterangan = document.getElementById('keterangan').value.trim();
+        const messageBox = document.getElementById('message');
+        
+        if (!kode || !keterangan) {
+            messageBox.style.color = 'red';
+            messageBox.textContent = 'Kode dan Keterangan wajib diisi.';
+            return;
+        }
+
+        const payload = {
+            KODEJN: kode,
+            KETERANGAN: keterangan
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+
+            messageBox.style.color = (result.status === 'error') ? 'red' : 'green';
+            messageBox.textContent = result.message;
+
+            if (result.status === 'success') {
+                // Refresh data setelah berhasil simpan
+                fetchJenisData(); 
+                document.getElementById('kodeJenis').value = '';
+                document.getElementById('keterangan').value = '';
+            }
+
+        } catch (error) {
+            messageBox.style.color = 'red';
+            messageBox.textContent = `Koneksi Gagal saat Simpan: ${error.message}`;
+        }
+    }
+
+    // Panggil fungsi saat halaman selesai dimuat (mirip Form_Load di VB6)
+    window.onload = fetchJenisData;
+    
+</script>
+
+</body>
+</html>

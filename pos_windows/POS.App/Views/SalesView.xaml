@@ -1,0 +1,30 @@
+<Page x:Class="POS.App.Views.SalesView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Penjualan">
+    <DockPanel Margin="16">
+        <TextBlock DockPanel.Dock="Top" Text="Daftar Penjualan" Style="{StaticResource TitleText}" Margin="0,0,0,12"/>
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <Button Content="Refresh" DockPanel.Dock="Right" Click="Refresh_OnClick"/>
+        </DockPanel>
+        <DataGrid x:Name="Grid" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Nomor" Binding="{Binding Number}" Width="160"/>
+                <DataGridTextColumn Header="Tanggal" Binding="{Binding Date, StringFormat='dd/MM/yyyy HH:mm'}" Width="140"/>
+                <DataGridTextColumn Header="Customer" Binding="{Binding CustomerName}" Width="*"/>
+                <DataGridTextColumn Header="Salesman" Binding="{Binding Salesman}" Width="120"/>
+                <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat=N0}" Width="100"/>
+                <DataGridTemplateColumn Header="Aksi" Width="120">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Detail" Click="Detail_OnClick" Style="{StaticResource LinkButton}"/>
+                                <Button Content="Hapus" Click="Delete_OnClick" Style="{StaticResource LinkButton.Danger}" Margin="8,0,0,0"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</Page>

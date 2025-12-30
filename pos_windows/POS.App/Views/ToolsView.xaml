@@ -1,0 +1,61 @@
+<Page x:Class="POS.App.Views.ToolsView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Tools">
+    <DockPanel Margin="16">
+        <TextBlock DockPanel.Dock="Top" Text="Alat Bantu" Style="{StaticResource TitleText}" Margin="0,0,0,12"/>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <GroupBox Header="Storage Mode" Grid.Row="0" Margin="0,0,0,12">
+                <DockPanel Margin="8">
+                    <TextBlock Text="Aktif: SQLite (EF)" VerticalAlignment="Center"/>
+                    <Button Content="Gunakan SQLite (EF)" Click="UseEf_OnClick" DockPanel.Dock="Right"/>
+                </DockPanel>
+            </GroupBox>
+
+            <GroupBox Header="Migrasi Data" Grid.Row="1" Margin="0,0,0,12">
+                <StackPanel Orientation="Horizontal" Margin="8">
+                    <Button Content="Impor JSON → SQLite" Click="Import_OnClick"/>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="Data Sampel" Grid.Row="2" Margin="0,0,0,12">
+                <StackPanel Orientation="Horizontal" Margin="8">
+                    <Button Content="Seed 300 Produk + 200 Jual + 200 Beli" Click="Seed_OnClick"/>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Header="Identitas Toko" Grid.Row="3" Margin="0,0,0,12">
+                <Grid Margin="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="160"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Nama Toko" VerticalAlignment="Center"/>
+                    <TextBox x:Name="TxtStoreName" Grid.Column="1" Margin="8,0,8,0"/>
+                    <Button Grid.Column="2" Content="Simpan" Click="SaveStore_OnClick" Style="{StaticResource AccentButton}"/>
+
+                    <TextBlock Grid.Row="1" Text="Logo (PNG/JPG)" VerticalAlignment="Center"/>
+                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Margin="8,0,8,0">
+                        <TextBox x:Name="TxtLogoPath" Width="260" IsReadOnly="True" Margin="0,0,8,0"/>
+                        <Button Content="Pilih File" Click="PickLogo_OnClick"/>
+                    </StackPanel>
+                </Grid>
+            </GroupBox>
+
+            <TextBlock Grid.Row="4" x:Name="LblStatus" Margin="0,12,0,0"/>
+        </Grid>
+    </DockPanel>
+</Page>

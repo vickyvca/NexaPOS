@@ -1,0 +1,22 @@
+<div class="card">
+  <h3>Products</h3>
+  <div class="toolbar">
+    <input id="q" placeholder="Cari nama/kode…" oninput="prodSearch()" />
+  </div>
+  <div class="list">
+    <table id="tbl">
+      <thead><tr><th>KODEBRG</th><th>NAMABRG</th><th class="right">Harga</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+<script>
+  let all=[], data=[];
+  function fmt(n){ return new Intl.NumberFormat('id-ID').format(Number(n||0)); }
+  async function api(url){ const r=await fetch(url); if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }
+  async function load(){ const res = await api('../api_products.php'); all=res.data||[]; data=all; render(); }
+  function prodSearch(){ const q=(document.getElementById('q').value||'').toLowerCase(); data = all.filter(p=> (p.NAMABRG||'').toLowerCase().includes(q) || (p.KODEBRG||'').toLowerCase().includes(q)); render(); }
+  function render(){ const tb=document.querySelector('#tbl tbody'); tb.innerHTML=''; data.forEach(p=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${p.KODEBRG}</td><td>${p.NAMABRG}</td><td class='right'>${fmt(p.HGJUAL)}</td>`; tb.appendChild(tr); }); }
+  load();
+</script>
+

@@ -1,0 +1,44 @@
+<div class="card">
+  <h3>Master Jenis</h3>
+  <div class="toolbar">
+    <input id="kodeJenis" placeholder="KODEJN (mis. 06)" maxlength="4" />
+    <input id="keterangan" placeholder="KETERANGAN" />
+    <button class="btn" onclick="jenisCreate()">Tambah</button>
+  </div>
+  <div id="msg" class="muted"></div>
+  <div class="spacer"></div>
+  <div class="list">
+    <table id="tblJenis">
+      <thead><tr><th>KODEJN</th><th>KETERANGAN</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+<script>
+  async function api(url, opts={}){ const r=await fetch(url, opts); if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }
+  async function loadJenis(){
+    const res = await api('../api_ref_jenis.php');
+    const tbody = document.querySelector('#tblJenis tbody');
+    document.getElementById('msg').textContent='';
+    tbody.innerHTML='';
+    if(res.status==='success' && Array.isArray(res.data)){
+      res.data.forEach(row=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML = `<td>${row.KODEJN}</td><td>${row.KETERANGAN}</td>`;
+        tbody.appendChild(tr);
+      });
+    } else {
+      document.getElementById('msg').textContent = res.message || 'Tidak ada data.';
+    }
+  }
+  async function jenisCreate(){
+    const kode = (document.getElementById('kodeJenis').value||'').trim();
+    const ket = (document.getElementById('keterangan').value||'').trim();
+    if(!kode||!ket){ document.getElementById('msg').textContent='Kode/Keterangan wajib.'; return; }
+    const res = await api('../api_ref_jenis.php',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({KODEJN:kode, KETERANGAN:ket})});
+    document.getElementById('msg').textContent = res.message || res.status;
+    if(res.status==='success'){ document.getElementById('kodeJenis').value=''; document.getElementById('keterangan').value=''; loadJenis(); }
+  }
+  loadJenis();
+</script>
+
